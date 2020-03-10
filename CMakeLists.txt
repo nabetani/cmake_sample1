@@ -21,6 +21,10 @@ function(define_build cond target)
     $<$<STREQUAL:release,${cond}>:-O2>
     $<$<STREQUAL:debug,${cond}>:-O0 -g>
   )
+  target_compile_features("${TNAME}" PUBLIC
+    cxx_std_17
+  )
+
 endfunction()
 
 define_build( "release" "sample.out")
