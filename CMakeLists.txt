@@ -11,25 +11,16 @@ function(define_build cond target)
       RUNTIME_OUTPUT_DIRECTORY "${cond}"
       RUNTIME_OUTPUT_NAME "${target}"
   )
-  if(cond STREQUAL "release")
-    message( "release" )
-    target_compile_definitions("${TNAME}"
-      PUBLIC -DNDEBUG=1)
-    target_compile_options( "${TNAME}"
-      PUBLIC -O2 )
-  elseif(cond STREQUAL "debug")
-    message( "debug" )
-    target_compile_definitions("${TNAME}"
-      PUBLIC -DDEBUG=1
-      PUBLIC -D_DEBUG=1
-    )
-    target_compile_options( "${TNAME}"
-      PUBLIC -O0 )
-  else()
-    message( "unknown condition: ${cond}" )
-  endif()
-  target_compile_options( "${TNAME}"
-    PUBLIC -Wall )
+  target_compile_definitions("${TNAME}" PUBLIC
+    $<$<STREQUAL:release,${cond}>:NDEBUG=1>
+    $<$<STREQUAL:debug,${cond}>:DEBUG=1>
+    $<$<STREQUAL:debug,${cond}>:_DEBUG=1>
+  )
+  target_compile_options( "${TNAME}" PUBLIC
+    -Wall
+    $<$<STREQUAL:release,${cond}>:-O2>
+    $<$<STREQUAL:debug,${cond}>:-O0 -g>
+  )
 endfunction()
 
 define_build( "release" "sample.out")
