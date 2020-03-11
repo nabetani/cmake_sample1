@@ -2,24 +2,28 @@ cmake_minimum_required(VERSION 3.16)
 
 project( cmake_sample1 CXX)
 
-function(define_build cond target)
-  message( "${cond} -- ${target}")
-  set(TNAME "${cond}.${target}" )
-  add_executable( "${TNAME}" src/main.cpp )
+function(define_build)
+  cmake_parse_arguments(DEF "DEBUG" "COND" "TARGET" ${ARGN})
+
+  set(TNAME "${DEF_COND}.${DEF_TARGET}" )
+  add_executable( "${TNAME}" )
+  target_sources( "${TNAME}"
+    PRIVATE src/main.cpp
+  )
   set_target_properties("${TNAME}" 
     PROPERTIES
-      RUNTIME_OUTPUT_DIRECTORY "${cond}"
-      RUNTIME_OUTPUT_NAME "${target}"
+      RUNTIME_OUTPUT_DIRECTORY "${DEF_COND}"
+      RUNTIME_OUTPUT_NAME "${DEF_TARGET}"
   )
-  target_compile_definitions("${TNAME}" PUBLIC
-    $<$<STREQUAL:release,${cond}>:NDEBUG=1>
-    $<$<STREQUAL:debug,${cond}>:DEBUG=1>
-    $<$<STREQUAL:debug,${cond}>:_DEBUG=1>
+  target_compile_definitions("${TNAME}" PRIVATE
+    $<$<NOT:$<BOOL:${DEF_DEBUG}>>:NDEBUG=1>
+    $<$<BOOL:${DEF_DEBUG}>:DEBUG=1>
+    $<$<BOOL:${DEF_DEBUG}>:_DEBUG=1>
   )
   target_compile_options( "${TNAME}" PUBLIC
     -Wall
-    $<$<STREQUAL:release,${cond}>:-O2>
-    $<$<STREQUAL:debug,${cond}>:-O0 -g>
+    $<$<NOT:$<BOOL:${DEF_DEBUG}>>:-O2>
+    $<$<BOOL:${DEF_DEBUG}>:-O0 -g>
   )
   target_compile_features("${TNAME}" PUBLIC
     cxx_std_17
@@ -27,6 +31,12 @@ function(define_build cond target)
 
 endfunction()
 
-define_build( "release" "sample.out")
-define_build( "debug" "sample.out")
+define_build(
+  COND "release"
+  TARGET "sample.out")
+
+define_build(
+  DEBUG
+  COND "debug"
+  TARGET "sample.out")
 
