@@ -2,13 +2,15 @@ cmake_minimum_required(VERSION 3.16)
 
 project( cmake_sample1 CXX)
 
+file(GLOB SOURCES src/*.cpp)
+
 function(define_build)
   cmake_parse_arguments(DEF "DEBUG" "COND" "TARGET" ${ARGN})
 
   set(TNAME "${DEF_COND}.${DEF_TARGET}" )
   add_executable( "${TNAME}" )
   target_sources( "${TNAME}"
-    PRIVATE src/main.cpp
+    PRIVATE ${SOURCES}
   )
   set_target_properties("${TNAME}" 
     PROPERTIES
