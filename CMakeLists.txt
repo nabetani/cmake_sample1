@@ -19,7 +19,7 @@ function(define_build)
   add_executable( "${TNAME}" )
   target_sources( "${TNAME}"
     PRIVATE
-      ${SOURCES}                              # 必ず使う使うソースコード
+      ${SOURCES}                              # 必ず使うソースコード
       $<$<BOOL:${DEF_TEST}>:${TEST_SOURCES}>  # TESTのときだけ使うソースコード
   )
   set_target_properties("${TNAME}" 
