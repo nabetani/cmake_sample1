@@ -8,7 +8,13 @@ int main( int argc, char const * argv[] )
 #if defined DEBUG
   std::cout <<   "DEBUG!" << std::endl;
 #endif
+#if defined _DEBUG
+  std::cout <<   "_DEBUG!" << std::endl;
+#endif
 #if defined NDEBUG
   std::cout <<   "NOT DEBUG!" << std::endl;
+#endif
+#if defined TEST
+  std::cout <<   "TEST!" << std::endl;
 #endif
 }
