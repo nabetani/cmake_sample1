@@ -2,8 +2,10 @@ cmake_minimum_required(VERSION 3.16)
 
 project(cmake_sample1 LANGUAGES CXX )
 
+set( CMAKE_CXX_FLAGS -std=c++17 ) # ここで c++11 移行を指定しないと gtest のビルドが通らない
+
 file(GLOB SOURCES src/*.cpp) # 通常のソースコード
-file(GLOB TEST_SOURCES test/*.cpp) # テスト用のソースコード
+file(GLOB TEST_SOURCES src/test/*.cpp) # テスト用のソースコード
 
 function(define_build)
   cmake_parse_arguments(
@@ -54,6 +56,35 @@ function(define_build)
   target_compile_features("${TNAME}" PUBLIC
     cxx_std_17
   )
+  if( ${DEF_TEST} STREQUAL "TRUE" )
+    configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
+    execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+      RESULT_VARIABLE result
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
+    if(result)
+      message(FATAL_ERROR "CMake step for googletest failed: ${result}")
+    endif()
+    execute_process(COMMAND ${CMAKE_COMMAND} --build .
+      RESULT_VARIABLE result
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
+    if(result)
+      message(FATAL_ERROR "Build step for googletest failed: ${result}")
+    endif()
+
+    # Prevent overriding the parent project's compiler/linker
+    # settings on Windows
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+    # Add googletest directly to our build. This defines
+    # the gtest and gtest_main targets.
+    add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
+                    ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
+                    EXCLUDE_FROM_ALL)
+
+    # Now simply link against gtest or gtest_main as needed. Eg
+    target_link_libraries("${TNAME}" gtest_main)
+
+  endif()
 
 endfunction()
 
