@@ -57,16 +57,17 @@ function(define_build)
     cxx_std_17
   )
   if( ${DEF_TEST} STREQUAL "TRUE" )
-    configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
+    file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
+    configure_file(CMakeLists.txt.in  lib/googletest-download/CMakeLists.txt)
     execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
       RESULT_VARIABLE result
-      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/googletest-download )
     if(result)
       message(FATAL_ERROR "CMake step for googletest failed: ${result}")
     endif()
     execute_process(COMMAND ${CMAKE_COMMAND} --build .
       RESULT_VARIABLE result
-      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/googletest-download )
     if(result)
       message(FATAL_ERROR "Build step for googletest failed: ${result}")
     endif()
@@ -77,8 +78,8 @@ function(define_build)
 
     # Add googletest directly to our build. This defines
     # the gtest and gtest_main targets.
-    add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
-                    ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
+    add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/lib/googletest-src
+                    ${CMAKE_CURRENT_BINARY_DIR}/lib/googletest-build
                     EXCLUDE_FROM_ALL)
 
     # Now simply link against gtest or gtest_main as needed. Eg
