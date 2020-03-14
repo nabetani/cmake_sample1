@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 
 project(cmake_sample1 LANGUAGES CXX )
 
-set( CMAKE_CXX_FLAGS -std=c++17 ) # ここで c++11 移行を指定しないと gtest のビルドが通らない
+set( CMAKE_CXX_FLAGS -std=c++17 ) # ここで c++11 以降を指定しないと gtest のビルドが通らない
 set( SRC_WILDCARDS src/*.cpp ) # 通常のソースコード
 file(GLOB TEST_SOURCES src/test/*.cpp) # テスト用のソースコード
 
