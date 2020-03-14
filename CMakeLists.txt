@@ -7,6 +7,32 @@ set( CMAKE_CXX_FLAGS -std=c++17 ) # ここで c++11 移行を指定しないと 
 file(GLOB SOURCES src/*.cpp) # 通常のソースコード
 file(GLOB TEST_SOURCES src/test/*.cpp) # テスト用のソースコード
 
+# google test 対応
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
+configure_file(CMakeLists.txt.in  lib/googletest-download/CMakeLists.txt)
+execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+  RESULT_VARIABLE result
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/googletest-download )
+if(result)
+  message(FATAL_ERROR "CMake step for googletest failed: ${result}")
+endif()
+execute_process(COMMAND ${CMAKE_COMMAND} --build .
+  RESULT_VARIABLE result
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/googletest-download )
+if(result)
+  message(FATAL_ERROR "Build step for googletest failed: ${result}")
+endif()
+
+# Prevent overriding the parent project's compiler/linker
+# settings on Windows
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+# Add googletest directly to our build. This defines
+# the gtest and gtest_main targets.
+add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/lib/googletest-src
+                ${CMAKE_CURRENT_BINARY_DIR}/lib/googletest-build
+                EXCLUDE_FROM_ALL)
+
 function(define_build)
   cmake_parse_arguments(
     DEF           # 変数名につく prefix
@@ -63,31 +89,6 @@ function(define_build)
     cxx_std_17
   )
   if( ${DEF_TEST} STREQUAL "TRUE" )
-    file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
-    configure_file(CMakeLists.txt.in  lib/googletest-download/CMakeLists.txt)
-    execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-      RESULT_VARIABLE result
-      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/googletest-download )
-    if(result)
-      message(FATAL_ERROR "CMake step for googletest failed: ${result}")
-    endif()
-    execute_process(COMMAND ${CMAKE_COMMAND} --build .
-      RESULT_VARIABLE result
-      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/googletest-download )
-    if(result)
-      message(FATAL_ERROR "Build step for googletest failed: ${result}")
-    endif()
-
-    # Prevent overriding the parent project's compiler/linker
-    # settings on Windows
-    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-
-    # Add googletest directly to our build. This defines
-    # the gtest and gtest_main targets.
-    add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/lib/googletest-src
-                    ${CMAKE_CURRENT_BINARY_DIR}/lib/googletest-build
-                    EXCLUDE_FROM_ALL)
-
     # Now simply link against gtest or gtest_main as needed. Eg
     target_link_libraries("${TNAME}" gtest_main)
 
@@ -108,5 +109,10 @@ define_build(
   TEST
   DEBUG
   COND "test"
+  TARGET "sample.out")
+
+define_build(
+  TEST
+  COND "reltest"
   TARGET "sample.out")
 
