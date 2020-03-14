@@ -12,3 +12,5 @@ int sum_of_digits(int a, int b) {
   }
   return sum;
 }
+
+int unused_function() { return 1; }

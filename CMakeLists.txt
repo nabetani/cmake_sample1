@@ -64,17 +64,19 @@ function(define_build)
       # TEST時のマクロ
       TESTBUILD=1>
   )
-  target_compile_options( "${TNAME}" PRIVATE
-    -Wall
-    $<$<NOT:$<BOOL:${DEF_DEBUG}>>:
-      # 非DEBUG時のオプション
-      -O2>
-    $<$<BOOL:${DEF_DEBUG}>:
-      # DEBUG時のオプション
-      -O0 -g>
-    $<$<BOOL:${DEF_TEST}>:
-      # TEST時のオプション
-      --coverage>
+  target_compile_options( "${TNAME}"
+    PRIVATE
+      $<$<NOT:$<BOOL:${DEF_DEBUG}>>:
+        # 非DEBUG時のオプション
+        -O2>
+      $<$<BOOL:${DEF_DEBUG}>:
+        # DEBUG時のオプション
+        -O0 -g>
+    PUBLIC
+      -Wall
+      $<$<BOOL:${DEF_TEST}>:
+        # TEST時のオプション
+        -g --coverage -fno-elide-constructors  -fprofile-instr-generate -fcoverage-mapping>
   )
   target_include_directories("${TNAME}" PRIVATE
     "src"
@@ -83,7 +85,7 @@ function(define_build)
     -Wall -lpthread
     $<$<BOOL:${DEF_TEST}>:
       # TEST時のオプション
-       --coverage>
+       --coverage -fno-elide-constructors -fprofile-instr-generate -fcoverage-mapping>
   )
   target_compile_features("${TNAME}" PUBLIC
     cxx_std_17
@@ -115,4 +117,8 @@ define_build(
   TEST
   COND "reltest"
   TARGET "sample.out")
+
+add_custom_target(coverage 
+  COMMAND ./coverage.sh
+  DEPENDS test ./coverage.sh)
 
