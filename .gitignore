@@ -10,7 +10,7 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 
-release
-debug
-test
-lib
+/release
+/debug
+/test
+/lib
