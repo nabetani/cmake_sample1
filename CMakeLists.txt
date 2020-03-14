@@ -3,15 +3,15 @@ cmake_minimum_required(VERSION 3.16)
 project(cmake_sample1 LANGUAGES CXX )
 
 set( CMAKE_CXX_FLAGS -std=c++17 ) # ここで c++11 移行を指定しないと gtest のビルドが通らない
-
-file(GLOB SOURCES src/*.cpp) # 通常のソースコード
-file(GLOB REL_SOURCES 
-  RELATIVE ${CMAKE_CURRENT_BINARY_DIR}
-  src/*.cpp) # 通常のソースコード
-
+set( SRC_WILDCARDS src/*.cpp ) # 通常のソースコード
 file(GLOB TEST_SOURCES src/test/*.cpp) # テスト用のソースコード
 
-# google test 対応
+file(GLOB SOURCES ${SRC_WILDCARDS})
+file(GLOB REL_SOURCES 
+  RELATIVE ${CMAKE_CURRENT_BINARY_DIR}
+  ${SRC_WILDCARDS})
+
+# google test 対応( see https://github.com/google/googletest/blob/master/googletest/README.md )
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
 configure_file(CMakeLists.txt.in  lib/googletest-download/CMakeLists.txt)
 execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
