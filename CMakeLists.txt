@@ -38,7 +38,7 @@ function(define_build)
       # TEST時のマクロ
       TESTBUILD=1>
   )
-  target_compile_options( "${TNAME}" PUBLIC
+  target_compile_options( "${TNAME}" PRIVATE
     -Wall
     $<$<NOT:$<BOOL:${DEF_DEBUG}>>:
       # 非DEBUG時のオプション
@@ -46,15 +46,18 @@ function(define_build)
     $<$<BOOL:${DEF_DEBUG}>:
       # DEBUG時のオプション
       -O0 -g>
+    $<$<BOOL:${DEF_TEST}>:
+      # TEST時のオプション
+      --coverage>
   )
   target_include_directories("${TNAME}" PRIVATE
     "src"
   )
   target_link_options( "${TNAME}" PUBLIC
-    -lpthread
+    -Wall -lpthread
     $<$<BOOL:${DEF_TEST}>:
       # TEST時のオプション
-      --coverage>
+       --coverage>
   )
   target_compile_features("${TNAME}" PUBLIC
     cxx_std_17
