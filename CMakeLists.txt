@@ -5,6 +5,10 @@ project(cmake_sample1 LANGUAGES CXX )
 set( CMAKE_CXX_FLAGS -std=c++17 ) # ここで c++11 移行を指定しないと gtest のビルドが通らない
 
 file(GLOB SOURCES src/*.cpp) # 通常のソースコード
+file(GLOB REL_SOURCES 
+  RELATIVE ${CMAKE_CURRENT_BINARY_DIR}
+  src/*.cpp) # 通常のソースコード
+
 file(GLOB TEST_SOURCES src/test/*.cpp) # テスト用のソースコード
 
 # google test 対応
@@ -76,7 +80,7 @@ function(define_build)
       -Wall
       $<$<BOOL:${DEF_TEST}>:
         # TEST時のオプション
-        -g --coverage -fno-elide-constructors  -fprofile-instr-generate -fcoverage-mapping>
+        -g --coverage -fno-elide-constructors  >
   )
   target_include_directories("${TNAME}" PRIVATE
     "src"
@@ -85,7 +89,7 @@ function(define_build)
     -Wall -lpthread
     $<$<BOOL:${DEF_TEST}>:
       # TEST時のオプション
-       --coverage -fno-elide-constructors -fprofile-instr-generate -fcoverage-mapping>
+       --coverage -fno-elide-constructors >
   )
   target_compile_features("${TNAME}" PUBLIC
     cxx_std_17
@@ -118,7 +122,12 @@ define_build(
   COND "reltest"
   TARGET "sample.out")
 
-add_custom_target(coverage 
-  COMMAND ./coverage.sh
-  DEPENDS test ./coverage.sh)
+add_custom_target(coverage
+  DEPENDS test ./coverage.sh
+  COMMAND rm -f CMakeFiles/test.dir/**/*.gcda
+  COMMAND mkdir -p gcov
+  COMMAND rm -f gcov/*.gcov
+  COMMAND test/sample.out
+  COMMAND ./coverage.sh ${REL_SOURCES}
+  COMMAND mv *.gcov gcov)
 

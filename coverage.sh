@@ -2,15 +2,18 @@
 
 set -eu
 HERE=$(cd $(dirname $0); pwd)
+cd $HERE
+
 TARGET=test
 
-echo $HERE
-cd $HERE
-rm -f CMakeFiles/${TARGET}.dir/**/*.gcda
-${TARGET}/sample.out
-mkdir -p gcov
+function makegcov(){
+  local SRC=$1
+  gcov -p -l -f ./${SRC} \
+    -gcno=./CMakeFiles/test.dir/${SRC}.gcno \
+    -gcda=./CMakeFiles/test.dir/${SRC}.gcda | c++filt -n
+}
 
-gcov -p -l -f ./src/sum_of_digits.cpp \
-  -gcno=./CMakeFiles/test.dir/src/sum_of_digits.cpp.gcno \
-  -gcda=./CMakeFiles/test.dir/src/sum_of_digits.cpp.gcda
-
+for x in "$@"
+do
+  makegcov "$x"
+done
