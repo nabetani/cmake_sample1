@@ -36,7 +36,7 @@ function(define_build)
       DEBUG=1;_DEBUG=1>
     $<$<BOOL:${DEF_TEST}>:
       # TEST時のマクロ
-      TEST=1>
+      TESTBUILD=1>
   )
   target_compile_options( "${TNAME}" PUBLIC
     -Wall
@@ -46,6 +46,9 @@ function(define_build)
     $<$<BOOL:${DEF_DEBUG}>:
       # DEBUG時のオプション
       -O0 -g>
+  )
+  target_include_directories("${TNAME}" PRIVATE
+    "src"
   )
   target_link_options( "${TNAME}" PUBLIC
     -lpthread
