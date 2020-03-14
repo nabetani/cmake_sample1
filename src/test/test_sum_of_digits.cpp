@@ -32,4 +32,14 @@ TEST(sum_of_digits, huge_base) {
   }
 }
 
+TEST(sum_of_digits, throw_if_invaldparam) {
+  EXPECT_THROW({ sum_of_digits(100, 0); }, std::runtime_error);
+  EXPECT_THROW({ sum_of_digits(100, 1); }, std::runtime_error);
+  EXPECT_NO_THROW({ sum_of_digits(100, 2); });
+  EXPECT_THROW({ sum_of_digits(-1, 10); }, std::runtime_error);
+  EXPECT_THROW({ sum_of_digits(-123, 10); }, std::runtime_error);
+  EXPECT_THROW({ sum_of_digits(123, -10); }, std::runtime_error);
+  EXPECT_THROW({ sum_of_digits(-123, -10); }, std::runtime_error);
+  EXPECT_NO_THROW({ sum_of_digits(0, 2); });
+}
 } // namespace
