@@ -2,14 +2,35 @@ cmake_minimum_required(VERSION 3.16)
 
 project(cmake_sample1 LANGUAGES CXX )
 
+# source codes
+set( SRC_WILDCARDS src/*.cpp )
+set( TEST_SRC_WILDCARDS src/test/*.cpp )
+
+# macros
+set(MACRO "")
+set(NDEBUG_MACRO NDEBUG=1)
+set(DEBUG_MACRO DEBUG=1;_DEBUG=1)
+set(TEST_MACRO TESTBUILD=1)
+
+# compile options
+set(COMPLIE_OPT -Wall)
+set(NDEBUG_COMPLIE_OPT -O2)
+set(DEBUG_COMPLIE_OPT -g -O0)
+set(TEST_COMPLIE_OPT -g --coverage -fno-elide-constructors)
+
+# link options
+set(LINK_OPT -Wall -lpthread)
+set(NDEBUG_LINK_OPT "")
+set(DEBUG_LINK_OPT "")
+set(TEST_LINK_OPT --coverage -fno-elide-constructors)
+
 set( CMAKE_CXX_FLAGS -std=c++17 ) # ここで c++11 以降を指定しないと gtest のビルドが通らない
-set( SRC_WILDCARDS src/*.cpp ) # 通常のソースコード
-file(GLOB TEST_SOURCES src/test/*.cpp) # テスト用のソースコード
 
 file(GLOB SOURCES ${SRC_WILDCARDS})
 file(GLOB REL_SOURCES 
   RELATIVE ${CMAKE_CURRENT_BINARY_DIR}
   ${SRC_WILDCARDS})
+file(GLOB TEST_SOURCES ${TEST_SRC_WILDCARDS})
 
 include(CMakeLists.gtest.txt)
 
@@ -25,47 +46,37 @@ function(define_build)
   add_executable( "${TNAME}" )
   target_sources( "${TNAME}"
     PRIVATE
-      ${SOURCES}                              # 必ず使うソースコード
-      $<$<BOOL:${DEF_TEST}>:${TEST_SOURCES}>  # TESTのときだけ使うソースコード
+      ${SOURCES}
+      $<$<BOOL:${DEF_TEST}>:${TEST_SOURCES}>
   )
   set_target_properties("${TNAME}" 
     PROPERTIES
       RUNTIME_OUTPUT_DIRECTORY "${DEF_COND}"
       RUNTIME_OUTPUT_NAME "${DEF_TARGET}"
   )
-  target_compile_definitions("${TNAME}" PRIVATE
-    $<$<NOT:$<BOOL:${DEF_DEBUG}>>:
-      # 非DEBUG時のマクロ
-      NDEBUG=1>
-    $<$<BOOL:${DEF_DEBUG}>:
-      # DEBUG時のマクロ
-      DEBUG=1;_DEBUG=1>
-    $<$<BOOL:${DEF_TEST}>:
-      # TEST時のマクロ
-      TESTBUILD=1>
+  target_compile_definitions("${TNAME}"
+    PRIVATE
+      ${MACRO}
+      $<$<NOT:$<BOOL:${DEF_DEBUG}>>:${NDEBUG_MACRO}>
+      $<$<BOOL:${DEF_DEBUG}>:${DEBUG_MACRO}>
+      $<$<BOOL:${DEF_TEST}>:${TEST_MACRO}>
   )
   target_compile_options( "${TNAME}"
     PRIVATE
-      $<$<NOT:$<BOOL:${DEF_DEBUG}>>:
-        # 非DEBUG時のオプション
-        -O2>
-      $<$<BOOL:${DEF_DEBUG}>:
-        # DEBUG時のオプション
-        -O0 -g>
-    PUBLIC
-      -Wall
-      $<$<BOOL:${DEF_TEST}>:
-        # TEST時のオプション
-        -g --coverage -fno-elide-constructors  >
+      ${COMPLIE_OPT}
+      $<$<NOT:$<BOOL:${DEF_DEBUG}>>:${NDEBUG_COMPLIE_OPT}>
+      $<$<BOOL:${DEF_DEBUG}>:${DEBUG_COMPLIE_OPT}>
+      $<$<BOOL:${DEF_TEST}>:${TEST_COMPLIE_OPT}>
   )
   target_include_directories("${TNAME}" PRIVATE
     "src"
   )
-  target_link_options( "${TNAME}" PUBLIC
-    -Wall -lpthread
-    $<$<BOOL:${DEF_TEST}>:
-      # TEST時のオプション
-       --coverage -fno-elide-constructors >
+  target_link_options( "${TNAME}"
+    PUBLIC
+      ${LINK_OPT}
+      $<$<NOT:$<BOOL:${DEF_DEBUG}>>:${NDEBUG_LINK_OPT}>
+      $<$<BOOL:${DEF_DEBUG}>:${DEBUG_LINK_OPT}>
+      $<$<BOOL:${DEF_TEST}>:${TEST_LINK_OPT}>
   )
   target_compile_features("${TNAME}" PUBLIC
     cxx_std_17
